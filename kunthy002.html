@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biochemistry & Clinical Pathology Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Checkbox & Radio Styles */
+        .check-indicator {
+            transition: all 0.2s ease-in-out;
+        }
+        input[type="radio"]:checked + .check-indicator {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            box-shadow: inset 0 0 0 4px white;
+        }
+
+        /* Feedback Animations */
+        .option-correct {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            animation: pulse-green 0.4s ease-out;
+            color: #166534;
+            font-weight: bold;
+        }
+        .option-incorrect {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            animation: shake 0.4s ease-in-out;
+            color: #991b1b;
+            text-decoration: line-through;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        
+        .disabled-labels { pointer-events: none; opacity: 0.9; }
+        .result-box { display: none; }
+        .chapter-header {
+            background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 py-10 px-4">
+    <div class="max-w-5xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-200">
+        <!-- Header -->
+        <div class="bg-blue-800 p-8 text-white text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-3">Biochemistry & Clinical Pathology</h1>
+            <p class="text-lg text-blue-100">Comprehensive Quiz - 178 Questions</p>
+        </div>
+
+        <div class="p-6 md:p-10">
+            <div id="quiz-container" class="space-y-8">
+                <!-- Quiz Content Will Be Generated Here -->
+            </div>
+
+            <!-- Grading Section -->
+            <div id="result" class="result-box mt-12 p-8 bg-green-50 rounded-2xl border-4 border-green-200 text-center shadow-inner">
+                <h3 class="text-3xl font-bold text-green-800 mb-2">Your Final Score</h3>
+                <div class="text-5xl font-extrabold text-green-600 mb-4"><span id="score">0</span> / <span id="total-qs">0</span></div>
+                <p class="text-green-700 text-lg">Review the highlighted answers above.</p>
+                <button onclick="location.reload()" class="mt-6 bg-white text-green-700 border-2 border-green-600 hover:bg-green-600 hover:text-white font-bold py-3 px-8 rounded-full transition">
+                    Retry Quiz
+                </button>
+            </div>
+
+            <div class="mt-12 flex justify-center" id="submit-btn-container">
+                <button onclick="gradeQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-4 px-14 rounded-full shadow-lg transition transform hover:-translate-y-1 active:scale-95">
+                    Submit & View Results
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Full Question Bank - 178 Questions
+        const mcqs = [
+            // Liver Function & Bone Markers
+            { c: "Liver Function & Bone Markers", q: "101. Which test helps differentiate between bone and liver disease in a patient with high ALP?", t: 1, a: [1], o: ["ALT", "GGT", "Bilirubin", "Albumin"] },
+            { c: "Liver Function & Bone Markers", q: "102. A 30-year-old female with suspected viral hepatitis is most likely to show which pattern?", t: 1, a: [1], o: ["Predominantly elevated ALP", "Elevated ALT and AST", "Elevated Albumin", "Decreased Bilirubin"] },
+            { c: "Liver Function & Bone Markers", q: "103. What does a high level of unconjugated bilirubin suggest?", t: 1, a: [1], o: ["Biliary duct obstruction", "Hemolysis or hepatic uptake failure", "Liver cirrhosis", "Muscle inflammation"] },
+            { c: "Liver Function & Bone Markers", q: "104. AST is found in all EXCEPT:", t: 1, a: [3], o: ["Liver", "Heart", "Muscle", "Pancreas"] },
+            { c: "Liver Function & Bone Markers", q: "105. In obstructive jaundice, which pattern is seen?", t: 1, a: [1], o: ["↑ ALT, ↑ AST", "↑ ALP, ↑ GGT", "↓ Bilirubin", "↓ ALP"] },
+            { c: "Liver Function & Bone Markers", q: "106. A prolonged prothrombin time indicates:", t: 1, a: [1], o: ["Increased bile production", "Impaired liver synthetic function", "Hemolysis", "Kidney failure"] },
+            { c: "Liver Function & Bone Markers", q: "107. Which test rises earliest in acute liver injury?", t: 1, a: [2], o: ["Albumin", "PT", "ALT", "Bilirubin"] },
+            { c: "Liver Function & Bone Markers", q: "108. GGT is mainly used to:", t: 1, a: [1], o: ["Diagnose hemolysis", "Confirm hepatic origin of ALP", "Measure liver synthesis", "Detect anemia"] },
+            { c: "Liver Function & Bone Markers", q: "109. Elevated conjugated bilirubin suggests:", t: 1, a: [1], o: ["Hemolysis", "Impaired excretion by liver", "Increased RBC breakdown", "Bone disease"] },
+            { c: "Liver Function & Bone Markers", q: "110. Which enzyme is a key marker of bone formation?", t: 1, a: [2], o: ["ALT", "AST", "ALP", "GGT"] },
+            { c: "Liver Function & Bone Markers", q: "111. The most abundant mineral in bone is:", t: 1, a: [1], o: ["Magnesium", "Calcium", "Phosphate", "Sodium"] },
+            { c: "Liver Function & Bone Markers", q: "112. Which hormone increases blood calcium levels?", t: 1, a: [1], o: ["Calcitonin", "Parathyroid hormone (PTH)", "Insulin", "Cortisol"] },
+            { c: "Liver Function & Bone Markers", q: "113. Vitamin D deficiency leads to:", t: 1, a: [1], o: ["Hypercalcemia", "Hypocalcemia", "Hypernatremia", "Hyperkalemia"] },
+            { c: "Liver Function & Bone Markers", q: "114. Urea is produced in the:", t: 1, a: [1], o: ["Kidney", "Liver", "Heart", "Lung"] },
+            { c: "Liver Function & Bone Markers", q: "115. Which condition shows elevated ALP of bone origin?", t: 1, a: [1], o: ["Hepatitis", "Osteomalacia", "Anemia", "Diabetes"] },
+
+            // Renal Function & Non-Protein Nitrogen
+            { c: "Renal Function & Non-Protein Nitrogen", q: "116. Which test is the best indicator of glomerular filtration rate (GFR)?", t: 1, a: [2], o: ["Serum sodium", "Serum potassium", "Creatinine clearance", "Hemoglobin"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "117. Normal kidney function maintains balance of:", t: 1, a: [1], o: ["Hormones", "Electrolytes", "Enzymes", "Vitamins"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "118. Which mineral works with calcium in bone formation?", t: 1, a: [1], o: ["Iron", "Phosphate", "Potassium", "Chloride"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "119. Which electrolyte is most affected in renal failure?", t: 1, a: [1], o: ["Sodium", "Potassium", "Calcium", "Chloride"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "120. Elevated blood urea is called:", t: 1, a: [0], o: ["Uremia", "Anemia", "Hyperglycemia", "Hypoxia"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "121. BUN stands for:", t: 1, a: [0], o: ["Blood urea nitrogen", "Basic urinary nitrogen", "Blood uric number", "Bone urea nitrogen"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "122. The major NPN component in blood is:", t: 1, a: [1], o: ["Uric acid", "Urea", "Creatinine", "Ammonia"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "123. Uric acid is the end product of metabolism of:", t: 1, a: [2], o: ["Proteins", "Lipids", "Purines", "Carbohydrates"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "124. Which condition decreases creatinine levels?", t: 1, a: [1], o: ["Renal failure", "Muscle wasting", "Dehydration", "High protein intake"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "125. Which test is used to detect protein in urine?", t: 1, a: [1], o: ["Serum creatinine", "Urinalysis", "Liver function test", "ECG"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "126. Elevated uric acid is associated with:", t: 1, a: [0], o: ["Gout", "Diabetes mellitus", "Anemia", "Hypertension"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "127. A patient has high creatinine and high urea. Diagnosis?", t: 1, a: [1], o: ["Liver disease", "Renal failure", "Diabetes", "Anemia"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "128. Creatinine is formed from:", t: 1, a: [3], o: ["Amino acids", "Urea cycle", "DNA breakdown", "Creatine phosphate in muscle"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "129. Which condition increases blood urea without kidney disease?", t: 1, a: [1], o: ["Liver failure", "High protein diet", "Nephritis", "Renal failure"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "130. Which is more specific for renal function?", t: 1, a: [0], o: ["Creatinine", "Urea", "Uric acid", "Sodium"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "131. Low blood urea level is seen in:", t: 1, a: [2], o: ["Renal failure", "Dehydration", "Liver disease", "High protein diet"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "132. In dehydration, blood urea is:", t: 1, a: [3], o: ["Decreased", "Zero", "Normal", "Increased"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "133. Which NPN compound is most toxic at high levels?", t: 1, a: [2], o: ["Urea", "Creatinine", "Ammonia", "Uric acid"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "134. Increased creatinine with normal urea suggests:", t: 1, a: [1], o: ["Liver disease", "Muscle disorder", "Dehydration", "High protein intake"] },
+            { c: "Renal Function & Non-Protein Nitrogen", q: "135. The term “azotemia” refers to:", t: 1, a: [1], o: ["Low nitrogen in blood", "Increased NPN in blood", "Protein deficiency", "High glucose level"] },
+
+            // Plasma Proteins & Immunoglobulins
+            { c: "Plasma Proteins & Immunoglobulins", q: "136. The most abundant plasma protein is:", t: 1, a: [2], o: ["Globulin", "Fibrinogen", "Albumin", "Transferrin"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "137. Albumin is primarily responsible for:", t: 1, a: [2], o: ["Immune defense", "Blood clotting", "Maintaining oncotic pressure", "Oxygen transport"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "138. Which plasma protein is mainly involved in blood clotting?", t: 1, a: [1], o: ["Albumin", "Fibrinogen", "Immunoglobulin", "Ceruloplasmin"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "139. Immunoglobulins are produced by:", t: 1, a: [1], o: ["Hepatocytes", "Plasma cells", "Erythrocytes", "Platelets"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "140. Which protein acts as a transport protein for iron?", t: 1, a: [2], o: ["Albumin", "Ferritin", "Transferrin", "Hemoglobin"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "141. Hypoalbuminemia may lead to:", t: 1, a: [1], o: ["Hypertension", "Edema", "Polycythemia", "Leukocytosis"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "142. Which of the following is a positive acute-phase protein?", t: 1, a: [2], o: ["Albumin", "Transferrin", "C-reactive protein", "Prealbumin"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "143. Plasma proteins are mainly synthesized in the:", t: 1, a: [0], o: ["Liver", "Kidney", "Bone marrow", "Spleen"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "144. Which fraction increases in chronic infections?", t: 1, a: [3], o: ["Albumin", "Alpha-1 globulin", "Beta globulin", "Gamma globulin"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "145. The A/G ratio refers to:", t: 1, a: [0], o: ["Albumin/Globulin ratio", "Antigen/Globulin ratio", "Albumin/Glucose ratio", "Acid/Gas ratio"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "146. Which condition is associated with decreased albumin levels?", t: 1, a: [1], o: ["Dehydration", "Liver cirrhosis", "Acute infection", "Polycythemia"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "147. Which protein binds and transports bilirubin?", t: 1, a: [2], o: ["Globulin", "Fibrinogen", "Albumin", "Haptoglobin"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "148. Which globulin fraction contains most antibodies?", t: 1, a: [3], o: ["Alpha-1", "Alpha-2", "Beta", "Gamma"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "149. Fibrinogen is converted to fibrin by:", t: 1, a: [1], o: ["Plasmin", "Thrombin", "Heparin", "Factor VIII"] },
+            { c: "Plasma Proteins & Immunoglobulins", q: "150. Which plasma protein decreases during inflammation (negative acute-phase protein)?", t: 1, a: [2], o: ["C-reactive protein", "Fibrinogen", "Albumin", "Haptoglobin"] },
+
+            // Advanced Renal Testing & Clearances
+            { c: "Advanced Renal Testing & Clearances", q: "151. Which test best assesses renal tubular acidification ability?", t: 1, a: [2], o: ["Serum creatinine", "Blood urea nitrogen", "Ammonium chloride loading test", "Creatinine clearance"] },
+            { c: "Advanced Renal Testing & Clearances", q: "152. Serum creatinine is preferred over urea because:", t: 1, a: [1], o: ["It is affected by diet", "It is more specific for renal function", "It is reabsorbed by tubules", "It fluctuates widely"] },
+            { c: "Advanced Renal Testing & Clearances", q: "153. Which substance is freely filtered and neither reabsorbed nor secreted?", t: 1, a: [2], o: ["Urea", "Creatinine", "Inulin", "Glucose"] },
+            { c: "Advanced Renal Testing & Clearances", q: "154. Creatinine clearance is used to estimate:", t: 1, a: [2], o: ["Renal blood flow", "Tubular secretion", "Glomerular filtration rate", "Urine concentration"] },
+            { c: "Advanced Renal Testing & Clearances", q: "155. In renal tubular acidosis (RTA), which finding is most typical?", t: 1, a: [2], o: ["Alkaline urine with metabolic alkalosis", "Acidic urine with metabolic acidosis", "Alkaline urine with metabolic acidosis", "Normal urine pH with alkalosis"] },
+            { c: "Advanced Renal Testing & Clearances", q: "156. Urea clearance is:", t: 1, a: [2], o: ["Equal to GFR", "Greater than GFR", "Less than GFR", "Independent of kidney function"] },
+            { c: "Advanced Renal Testing & Clearances", q: "157. Which substance is commonly used to evaluate tubular reabsorption capacity?", t: 1, a: [1], o: ["Inulin", "Glucose", "Urea", "Creatinine"] },
+            { c: "Advanced Renal Testing & Clearances", q: "158. Which parameter rises earliest in renal impairment?", t: 1, a: [0], o: ["Serum creatinine", "Blood urea", "Urine output", "GFR"] },
+            { c: "Advanced Renal Testing & Clearances", q: "159. The presence of glycosuria with normal blood glucose levels suggests:", t: 1, a: [2], o: ["Diabetes mellitus", "Glomerulonephritis", "Tubular dysfunction", "Liver disease"] },
+            { c: "Advanced Renal Testing & Clearances", q: "160. Which of the following is NOT an excretory function test?", t: 1, a: [3], o: ["Serum creatinine", "Blood urea nitrogen", "Bilirubin", "Inulin clearance"] },
+            { c: "Advanced Renal Testing & Clearances", q: "161. Which test evaluates renal concentrating ability?", t: 1, a: [0], o: ["Water deprivation test", "Glucose tolerance test", "Liver function test", "Bleeding time"] },
+            { c: "Advanced Renal Testing & Clearances", q: "162. Which of the following is a waste product excreted by kidneys?", t: 1, a: [1], o: ["Glucose", "Urea", "Albumin", "Hemoglobin"] },
+            { c: "Advanced Renal Testing & Clearances", q: "163. Inability to concentrate urine is seen in:", t: 1, a: [1], o: ["Acute glomerulonephritis", "Diabetes insipidus", "Nephrotic syndrome", "Hepatitis"] },
+            { c: "Advanced Renal Testing & Clearances", q: "164. Blood urea nitrogen (BUN) is influenced by:", t: 1, a: [3], o: ["Protein intake", "Liver function", "Hydration status", "All of the above"] },
+            { c: "Advanced Renal Testing & Clearances", q: "165. Which parameter reflects tubular secretion function?", t: 1, a: [0], o: ["PAH clearance", "Creatinine clearance", "Urea level", "Serum albumin"] },
+            { c: "Advanced Renal Testing & Clearances", q: "166. Which test is least accurate for GFR estimation?", t: 1, a: [2], o: ["Inulin clearance", "Creatinine clearance", "Urea clearance", "Radioisotope methods"] },
+            { c: "Advanced Renal Testing & Clearances", q: "167. A defect in proximal tubule function leads to:", t: 1, a: [2], o: ["Hematuria", "Proteinuria only", "Fanconi syndrome", "Hypertension"] },
+
+            // Clinical Enzymology & Hepatic Markers
+            { c: "Clinical Enzymology & Hepatic Markers", q: "168. Which enzyme is found in both liver and muscle tissue?", t: 1, a: [1], o: ["ALT", "AST", "ALP", "GGT"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "169. Which of the following is reabsorbed completely under normal conditions?", t: 1, a: [1], o: ["Creatinine", "Glucose", "Uric acid", "Sodium"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "170. Gamma-glutamyl transferase (GGT) is useful to:", t: 1, a: [2], o: ["Diagnose anemia", "Measure kidney function", "Confirm hepatic origin of ALP", "Detect diabetes"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "171. The Tm (transport maximum) is related to:", t: 1, a: [2], o: ["Glomerular filtration", "Tubular secretion only", "Tubular reabsorption capacity", "Blood pressure"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "172. Which enzyme is associated with biliary tract disease?", t: 1, a: [2], o: ["ALT", "AST", "ALP", "LDH"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "173. Which test helps diagnose distal renal tubular acidosis?", t: 1, a: [1], o: ["Water deprivation test", "Ammonium chloride test", "Glucose tolerance test", "Serum bilirubin"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "174. Which of the following enzymes is NOT primarily from the liver?", t: 1, a: [2], o: ["ALT", "AST", "CK", "ALP"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "175. Low urine specific gravity indicates:", t: 1, a: [2], o: ["Good concentrating ability", "Increased protein", "Impaired tubular function", "Hematuria"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "176. AST is present in:", t: 1, a: [1], o: ["Liver only", "Liver and heart", "Kidney only", "Brain only"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "177. Which ion is mainly secreted in distal tubules?", t: 1, a: [1], o: ["Sodium", "Potassium", "Calcium", "Chloride"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "178. A very high ALT (>1000 IU/L) is most suggestive of:", t: 1, a: [0], o: ["Acute viral hepatitis", "Chronic hepatitis", "Cirrhosis", "Bone disease"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "179. Tubular proteinuria is typically due to:", t: 1, a: [1], o: ["Glomerular damage", "Tubular reabsorption defect", "Liver failure", "Hemolysis"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "180. Which test evaluates clotting factor synthesis by the liver?", t: 1, a: [2], o: ["Bleeding time", "Platelet count", "Prothrombin time (PT)", "Hemoglobin"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "181. Which test is used to evaluate renal dilution ability?", t: 1, a: [0], o: ["Water loading test", "Ammonium chloride test", "Creatinine clearance", "Serum electrolytes"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "182. Prolonged prothrombin time suggests:", t: 1, a: [1], o: ["Increased albumin", "Impaired liver function", "Kidney disease", "Diabetes"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "183. Which test is the best indicator of glomerular filtration rate (GFR)?", t: 1, a: [2], o: ["Blood urea", "Serum creatinine", "Inulin clearance", "Uric acid"] },
+            { c: "Clinical Enzymology & Hepatic Markers", q: "184. Which test is used to assess detoxification function of the liver?", t: 1, a: [2], o: ["Serum albumin", "ALT", "Blood ammonia", "AST"] },
+
+            // Renal Calculi & Urinalysis
+            { c: "Renal Calculi & Urinalysis", q: "185. Which condition is associated with increased ammonia levels?", t: 1, a: [0], o: ["Hepatic encephalopathy", "Hypertension", "Diabetes mellitus", "Nephrotic syndrome"] },
+            { c: "Renal Calculi & Urinalysis", q: "186. The most common type of renal stone is:", t: 1, a: [1], o: ["Uric acid stone", "Calcium oxalate stone", "Cystine stone", "Struvite stone"] },
+            { c: "Renal Calculi & Urinalysis", q: "187. Which plasma protein has the shortest half-life, making it a sensitive marker of liver function?", t: 1, a: [2], o: ["Albumin", "Globulin", "Prealbumin", "Fibrinogen"] },
+            { c: "Renal Calculi & Urinalysis", q: "188. Which condition predisposes to calcium oxalate stones?", t: 1, a: [1], o: ["Hypocalcemia", "Hyperparathyroidism", "Hypouricemia", "Low vitamin D"] },
+            { c: "Renal Calculi & Urinalysis", q: "189. Which test is most sensitive for acute changes in liver synthetic function?", t: 1, a: [1], o: ["Serum albumin", "Prothrombin time", "Bilirubin", "ALP"] },
+            { c: "Renal Calculi & Urinalysis", q: "190. Uric acid stones are commonly associated with:", t: 1, a: [3], o: ["Alkaline urine", "Neutral urine", "Dilute urine", "Acidic urine"] },
+            { c: "Renal Calculi & Urinalysis", q: "191. Decreased urea synthesis indicates:", t: 1, a: [0], o: ["Impaired liver function", "Increased kidney function", "Dehydration", "Infection"] },
+            { c: "Renal Calculi & Urinalysis", q: "192. Which clotting factor is synthesized in the liver?", t: 1, a: [1], o: ["Factor VIII only", "Prothrombin (Factor II)", "Platelets", "Heparin"] },
+            { c: "Renal Calculi & Urinalysis", q: "193. Struvite stones are composed of:", t: 1, a: [2], o: ["Calcium and oxalate", "Uric acid", "Magnesium ammonium phosphate", "Cystine"] },
+            { c: "Renal Calculi & Urinalysis", q: "194. Which of the following is NOT synthesized in the liver?", t: 1, a: [2], o: ["Albumin", "Fibrinogen", "Immunoglobulins", "Prothrombin"] },
+            { c: "Renal Calculi & Urinalysis", q: "195. Struvite stones are commonly associated with:", t: 1, a: [1], o: ["Viral infection", "Bacterial infection", "Fungal infection", "Parasitic infection"] },
+            { c: "Renal Calculi & Urinalysis", q: "196. Globulins are mainly synthesized in:", t: 1, a: [2], o: ["Liver", "Kidney", "Immune system (plasma cells)", "Brain"] },
+            { c: "Renal Calculi & Urinalysis", q: "197. Cystine stones occur due to:", t: 1, a: [0], o: ["Genetic disorder of amino acid transport", "Increased calcium excretion", "High uric acid", "Infection"] },
+            { c: "Renal Calculi & Urinalysis", q: "198. Decreased fibrinogen leads to:", t: 1, a: [1], o: ["Thrombosis", "Bleeding tendency", "Hypertension", "Hyperglycemia"] },
+            { c: "Renal Calculi & Urinalysis", q: "199. Which test confirms the chemical composition of renal stones?", t: 1, a: [2], o: ["Urine routine exam", "X-ray", "Stone analysis", "Blood urea"] },
+            { c: "Renal Calculi & Urinalysis", q: "200. Which combination best indicates impaired liver synthetic function?", t: 1, a: [1], o: ["↑ ALT, ↑ AST", "↓ Albumin, prolonged PT", "↑ Bilirubin only", "↑ ALP only"] },
+            { c: "Renal Calculi & Urinalysis", q: "201. Which substance inhibits stone formation?", t: 1, a: [2], o: ["Calcium", "Oxalate", "Citrate", "Uric acid"] },
+            { c: "Renal Calculi & Urinalysis", q: "202. Hyperoxaluria leads to:", t: 1, a: [1], o: ["Uric acid stones", "Calcium oxalate stones", "Cystine stones", "Struvite stones"] },
+            { c: "Renal Calculi & Urinalysis", q: "203. Normal urine color is:", t: 1, a: [2], o: ["Red", "Dark brown", "Pale yellow", "Blue"] },
+            { c: "Renal Calculi & Urinalysis", q: "204. Which diet increases risk of renal stones?", t: 1, a: [2], o: ["High fluid intake", "Low salt diet", "High protein diet", "High citrate diet"] },
+            { c: "Renal Calculi & Urinalysis", q: "205. The yellow color of urine is due to:", t: 1, a: [2], o: ["Hemoglobin", "Bilirubin", "Urobilin", "Creatinine"] },
+            { c: "Renal Calculi & Urinalysis", q: "206. Which urine pH favors calcium phosphate stones?", t: 1, a: [2], o: ["Acidic", "Neutral", "Alkaline", "Variable"] },
+            { c: "Renal Calculi & Urinalysis", q: "207. Normal urine pH is approximately:", t: 1, a: [1], o: ["2–3", "4.5–8", "9–10", "10–12"] },
+            { c: "Renal Calculi & Urinalysis", q: "208. Which preventive measure is most effective for renal stones?", t: 1, a: [1], o: ["Reduce water intake", "Increase fluid intake", "Avoid all calcium", "High sugar diet"] },
+            { c: "Renal Calculi & Urinalysis", q: "209. Ketone bodies in urine are seen in:", t: 1, a: [2], o: ["Starvation", "Diabetes mellitus", "Both A and B", "Hypertension"] },
+
+            // Hepatic Detoxification & Urine Casts
+            { c: "Hepatic Detoxification & Urine Casts", q: "210. Which test is commonly used to assess liver detoxification function?", t: 1, a: [1], o: ["Serum albumin", "Blood ammonia", "ALT", "Bilirubin"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "211. Presence of bile salts in urine indicates:", t: 1, a: [1], o: ["Renal disease", "Liver disease", "Heart disease", "Lung disease"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "212. Which organ is primarily responsible for detoxification?", t: 1, a: [2], o: ["Kidney", "Lung", "Liver", "Spleen"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "213. Pyuria indicates:", t: 1, a: [0], o: ["WBCs in urine", "RBCs in urine", "Protein in urine", "Glucose in urine"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "214. Which pathway is responsible for ammonia detoxification?", t: 1, a: [2], o: ["Glycolysis", "Krebs cycle", "Urea cycle", "Pentose phosphate pathway"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "215. Which crystal is commonly seen in acidic urine?", t: 1, a: [2], o: ["Calcium phosphate", "Triple phosphate", "Uric acid", "Ammonium biurate"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "216. Which substance is used in the hippuric acid synthesis test?", t: 1, a: [1], o: ["Glycine", "Benzoic acid", "Ammonia", "Urea"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "217. Which crystal is seen in alkaline urine?", t: 1, a: [2], o: ["Uric acid", "Calcium oxalate", "Triple phosphate", "Cystine"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "218. The hippuric acid test evaluates:", t: 1, a: [1], o: ["Kidney function", "Liver detoxification", "Heart function", "Lung capacity"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "219. Casts in urine are formed in:", t: 1, a: [2], o: ["Bladder", "Urethra", "Renal tubules", "Liver"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "220. Which test involves conjugation of benzoic acid with glycine?", t: 1, a: [1], o: ["Bilirubin test", "Hippuric acid test", "Albumin test", "PT test"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "221. RBC casts indicate:", t: 1, a: [1], o: ["Urinary tract infection", "Glomerular disease", "Diabetes", "Liver disease"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "222. Impaired detoxification leads to accumulation of:", t: 1, a: [0], o: ["Toxins", "Glucose", "Albumin", "Calcium"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "223. Cloudy urine may indicate:", t: 1, a: [1], o: ["Normal finding", "Infection or crystals", "Low protein", "High glucose only"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "224. Which enzyme system is involved in drug detoxification?", t: 1, a: [0], o: ["Cytochrome P450", "Amylase", "Lipase", "Pepsin"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "225. Which reaction is common in liver detoxification?", t: 1, a: [3], o: ["Oxidation", "Reduction", "Conjugation", "All of the above"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "226. Which substance is conjugated in the liver to reduce toxicity?", t: 1, a: [1], o: ["Hemoglobin", "Bilirubin", "Glucose", "Sodium"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "227. Failure of detoxification may result in:", t: 1, a: [2], o: ["Improved metabolism", "Increased albumin", "Toxin accumulation", "Decreased urea"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "228. Which test reflects nitrogen detoxification?", t: 1, a: [0], o: ["Blood ammonia", "Serum albumin", "PT", "ALT"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "229. Which condition reduces detoxification capacity of the liver?", t: 1, a: [2], o: ["Hepatitis", "Cirrhosis", "Both A and B", "Hypertension"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "230. Which compound is formed after detoxification of benzoic acid?", t: 1, a: [1], o: ["Urea", "Hippuric acid", "Creatinine", "Uric acid"] },
+            { c: "Hepatic Detoxification & Urine Casts", q: "231. Which function is most affected in advanced liver failure?", t: 1, a: [2], o: ["Digestion", "Vision", "Detoxification", "Hearing"] },
+
+            // Lipid Profile & Hyperlipidemias
+            { c: "Lipid Profile & Hyperlipidemias", q: "232. The most atherogenic lipoprotein is:", t: 1, a: [2], o: ["HDL", "VLDL", "LDL", "Chylomicrons"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "233. Normal total cholesterol level is:", t: 1, a: [1], o: ["< 150 mg/dL", "< 200 mg/dL", "< 250 mg/dL", "< 300 mg/dL"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "234. Familial hypercholesterolemia is caused by mutation in:", t: 1, a: [0], o: ["LDL receptor", "HDL receptor", "VLDL enzyme", "Lipoprotein lipase"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "235. Secondary hypercholesterolemia may occur in:", t: 1, a: [1], o: ["Hyperthyroidism", "Hypothyroidism", "Anemia", "Infection"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "236. Which condition is associated with increased cholesterol?", t: 1, a: [2], o: ["Liver failure", "Malnutrition", "Nephrotic syndrome", "Hyperglycemia"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "237. Fasting is required before lipid profile mainly to assess:", t: 1, a: [3], o: ["HDL", "LDL", "Total cholesterol", "Triglycerides"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "238. Xanthomas are:", t: 1, a: [1], o: ["Liver lesions", "Cholesterol deposits in tissues", "Kidney stones", "Bone tumors"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "239. First-line drug for hypercholesterolemia:", t: 1, a: [2], o: ["Antibiotics", "Diuretics", "Statins", "Insulin"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "240. Which lifestyle change helps reduce cholesterol?", t: 1, a: [2], o: ["High saturated fat diet", "Smoking", "Regular exercise", "Alcohol abuse"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "241. LDL target in high-risk patients is approximately:", t: 1, a: [0], o: ["< 70 mg/dL", "< 150 mg/dL", "< 200 mg/dL", "< 250 mg/dL"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "242. Hyperlipidemia refers to:", t: 1, a: [1], o: ["Increased glucose in blood", "Increased lipids in blood", "Decreased cholesterol", "Increased protein"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "243. Lipids measured in a standard lipid profile include:", t: 1, a: [2], o: ["Cholesterol only", "Triglycerides only", "Cholesterol and triglycerides", "Proteins and glucose"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "244. Which lipoprotein carries triglycerides from liver to tissues?", t: 1, a: [2], o: ["HDL", "LDL", "VLDL", "Chylomicrons"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "245. Type I hyperlipidemia is characterized by elevated:", t: 1, a: [2], o: ["LDL", "HDL", "Chylomicrons", "VLDL"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "246. Type IIa hyperlipidemia shows increase in:", t: 1, a: [1], o: ["Triglycerides", "LDL", "HDL", "Chylomicrons"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "247. Type IIb hyperlipidemia shows increase in:", t: 1, a: [2], o: ["LDL only", "VLDL only", "LDL and VLDL", "HDL and LDL"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "248. Type IV hyperlipidemia is mainly due to elevated:", t: 1, a: [2], o: ["HDL", "LDL", "VLDL", "Chylomicrons"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "249. The patient should fast before lipid testing mainly to avoid elevation of:", t: 1, a: [2], o: ["HDL", "LDL", "Triglycerides", "Total cholesterol"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "250. Lipemia retinalis is associated with:", t: 1, a: [1], o: ["High LDL", "High triglycerides", "Low HDL", "Low cholesterol"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "251. Alcohol intake mainly increases:", t: 1, a: [2], o: ["HDL", "LDL", "Triglycerides", "Cholesterol esters"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "252. Major complication of hyperlipidemia:", t: 1, a: [1], o: ["Anemia", "Atherosclerosis", "Asthma", "Osteoporosis"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "253. Pancreatitis is associated with severe elevation of:", t: 1, a: [2], o: ["LDL", "HDL", "Triglycerides", "Phospholipids"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "254. Xanthelasma is:", t: 1, a: [1], o: ["Bone growth", "Fat deposition around eyelids", "Liver enlargement", "Kidney lesion"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "255. Drug of choice for high triglycerides:", t: 1, a: [0], o: ["Fibrates", "Statins", "Antibiotics", "Beta-blockers"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "256. Statins act by inhibiting:", t: 1, a: [1], o: ["Lipoprotein lipase", "HMG-CoA reductase", "Pancreatic lipase", "Cholesterol esterase"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "257. Which increases HDL?", t: 1, a: [2], o: ["Smoking", "Obesity", "Exercise", "Sedentary lifestyle"] },
+            { c: "Lipid Profile & Hyperlipidemias", q: "258. Ideal HDL level is:", t: 1, a: [2], o: ["< 20 mg/dL", "< 30 mg/dL", "> 40 mg/dL", "> 100 mg/dL"] },
+
+            // Ammonia Metabolism & Azotemia
+            { c: "Ammonia Metabolism & Azotemia", q: "259. The major form of nitrogen excretion in humans is:", t: 1, a: [1], o: ["Ammonia", "Urea", "Uric acid", "Creatinine"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "260. Ammonia is mainly produced from:", t: 1, a: [0], o: ["Protein metabolism", "Lipid metabolism", "Carbohydrate metabolism", "Vitamin metabolism"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "261. The first step of the urea cycle occurs in the:", t: 1, a: [1], o: ["Cytosol", "Mitochondria", "Nucleus", "Ribosome"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "262. The rate-limiting enzyme of the urea cycle is:", t: 1, a: [2], o: ["Arginase", "Ornithine transcarbamylase", "Carbamoyl phosphate synthetase I", "Argininosuccinate lyase"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "263. Which amino acid directly enters the urea cycle?", t: 1, a: [2], o: ["Glycine", "Alanine", "Ornithine", "Leucine"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "264. Ammonia is transported in blood mainly as:", t: 1, a: [1], o: ["Urea", "Glutamine", "Creatinine", "Albumin"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "265. In muscle, ammonia is transported to liver as:", t: 1, a: [3], o: ["Glucose", "Lactate", "Pyruvate", "Alanine"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "266. Elevated blood ammonia level is called:", t: 1, a: [1], o: ["Hyperglycemia", "Hyperammonemia", "Hyperlipidemia", "Hyperuricemia"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "267. The most common urea cycle disorder is deficiency of:", t: 1, a: [2], o: ["Arginase", "Carbamoyl phosphate synthetase I", "Ornithine transcarbamylase", "Argininosuccinate synthetase"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "268. Increased ammonia is toxic mainly to:", t: 1, a: [1], o: ["Heart", "Brain", "Liver", "Kidney"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "269. Increased blood urea is seen in:", t: 1, a: [1], o: ["Liver disease", "Kidney failure", "Malnutrition", "Overhydration"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "270. Uric acid is the end product of:", t: 1, a: [2], o: ["Protein metabolism", "Lipid metabolism", "Purine metabolism", "Carbohydrate metabolism"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "271. Creatinine is formed from:", t: 1, a: [1], o: ["Glucose", "Creatine", "Urea", "Uric acid"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "272. In liver failure, ammonia levels:", t: 1, a: [0], o: ["Increase", "Decrease", "Remain normal", "Fluctuate randomly"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "273. Treatment of hyperammonemia includes:", t: 1, a: [1], o: ["High protein diet", "Lactulose", "Glucose restriction", "Iron supplements"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "274. Blood urea nitrogen (BUN) is:", t: 1, a: [2], o: ["Decreased in prerenal azotemia", "Normal always", "Increased in prerenal azotemia", "Unrelated"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "275. Which condition causes prerenal azotemia?", t: 1, a: [0], o: ["Severe hemorrhage", "Kidney infection", "Urinary obstruction", "Polycystic kidney"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "276. Prerenal azotemia is usually reversible by:", t: 1, a: [1], o: ["Antibiotics", "Restoring blood flow", "Surgery", "Dialysis always"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "277. First step in management:", t: 1, a: [2], o: ["Dialysis", "Chemotherapy", "Fluid replacement", "Steroids"] },
+            { c: "Ammonia Metabolism & Azotemia", q: "278. In dehydration, hematocrit is usually:", t: 1, a: [1], o: ["Decreased", "Increased", "Normal", "Zero"] }
+        ];
+
+        // Audio Context for feedback
+        let audioCtx = null;
+        function playTone(freq, type, duration) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+        const playCorrect = () => playTone(880, 'sine', 0.2);
+        const playWrong = () => playTone(220, 'square', 0.2);
+
+        let totalQuestions = 0;
+
+        function initMCQs() {
+            const container = document.getElementById('quiz-container');
+            let currentChapter = "";
+
+            mcqs.forEach((m, idx) => {
+                // Insert Chapter Header
+                if (m.c !== currentChapter) {
+                    currentChapter = m.c;
+                    const chapterHeader = document.createElement('div');
+                    chapterHeader.className = "chapter-header text-white px-6 py-4 rounded-xl shadow-md mt-10 mb-6";
+                    chapterHeader.innerHTML = `<h2 class="text-2xl font-bold">${currentChapter}</h2>`;
+                    container.appendChild(chapterHeader);
+                }
+
+                totalQuestions++;
+                
+                const qDiv = document.createElement('div');
+                qDiv.className = 'mcq-wrapper p-5 md:p-6 border border-gray-200 rounded-xl bg-white shadow-sm transition-all duration-300';
+                qDiv.id = `wrapper-q${idx}`;
+                
+                qDiv.innerHTML = `
+                    <p class="font-bold text-lg text-gray-800 mb-4 leading-relaxed">${m.q}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 options-grid" id="grid-q${idx}">
+                        ${m.o.map((opt, oIdx) => `
+                            <label class="flex items-start p-3 md:p-4 border border-gray-200 rounded-xl hover:bg-slate-50 cursor-pointer transition relative group overflow-hidden bg-white">
+                                <input type="radio" name="q${idx}" value="${oIdx}" class="mt-1 mr-3 w-5 h-5 text-blue-600 hidden" onchange="checkAnswer(${idx})">
+                                <div class="w-5 h-5 mt-0.5 mr-3 border-2 border-gray-300 rounded-full check-indicator flex-shrink-0"></div>
+                                <span class="text-gray-700 leading-snug">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(qDiv);
+            });
+            
+            document.getElementById('total-qs').textContent = totalQuestions;
+        }
+
+        // Logic to check answer instantly when selected
+        function checkAnswer(qIdx) {
+            const m = mcqs[qIdx];
+            const grid = document.getElementById(`grid-q${qIdx}`);
+            const wrapper = document.getElementById(`wrapper-q${qIdx}`);
+            const labels = grid.querySelectorAll('label');
+            const checkedBoxes = grid.querySelectorAll(`input[name="q${qIdx}"]:checked`);
+            
+            if (checkedBoxes.length === 1) {
+                grid.classList.add('disabled-labels');
+                let isPerfect = true;
+                
+                // Evaluate selected boxes
+                checkedBoxes.forEach(cb => {
+                    const val = parseInt(cb.value);
+                    if (m.a.includes(val)) {
+                        labels[val].classList.add('option-correct');
+                    } else {
+                        labels[val].classList.add('option-incorrect');
+                        isPerfect = false;
+                    }
+                });
+                
+                // Reveal the correct answers that were missed
+                m.a.forEach(correctVal => {
+                    labels[correctVal].classList.add('option-correct');
+                });
+
+                if (isPerfect) {
+                    playCorrect();
+                    wrapper.classList.add('border-green-300', 'bg-green-50/30');
+                } else {
+                    playWrong();
+                    wrapper.classList.add('border-red-300', 'bg-red-50/30');
+                }
+            }
+        }
+
+        function gradeQuiz() {
+            let totalScore = 0;
+            
+            mcqs.forEach((m, idx) => {
+                const checkedBoxes = document.querySelectorAll(`input[name="q${idx}"]:checked`);
+                let isPerfect = false;
+
+                if (checkedBoxes.length === 1) {
+                    isPerfect = true;
+                    checkedBoxes.forEach(cb => {
+                        if (!m.a.includes(parseInt(cb.value))) {
+                            isPerfect = false;
+                        }
+                    });
+                }
+                
+                if (isPerfect) totalScore++;
+                
+                // Auto-evaluate any unanswered questions
+                if (checkedBoxes.length < 1) {
+                     // Provide visual feedback for unanswered questions
+                     const grid = document.getElementById(`grid-q${idx}`);
+                     grid.classList.add('disabled-labels');
+                     const labels = grid.querySelectorAll('label');
+                     m.a.forEach(correctVal => {
+                         labels[correctVal].classList.add('option-correct');
+                     });
+                     document.getElementById(`wrapper-q${idx}`).classList.add('border-red-300', 'bg-red-50/30');
+                }
+            });
+
+            document.getElementById('score').textContent = totalScore;
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('submit-btn-container').style.display = 'none';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        window.onload = initMCQs;
+    </script>
+</body>
+</html>
